@@ -31,7 +31,9 @@ export const TEAMS: Team[] = [
   { code: "CIV", name: "Côte d'Ivoire", flag: "https://flagcdn.com/w80/ci.png", rank: 38, points: 1487.36, evolution: 2 },
   { code: "NGA", name: "Nigéria", flag: "https://flagcdn.com/w80/ng.png", rank: 43, points: 1471.65, evolution: -1 },
   { code: "CMR", name: "Cameroun", flag: "https://flagcdn.com/w80/cm.png", rank: 49, points: 1447.15, evolution: 1 },
+  { code: "COD", name: "RD Congo", flag: "https://flagcdn.com/w80/cd.png", rank: 46, points: 1474.43, evolution: 1 },
   { code: "ALG", name: "Algérie", flag: "https://flagcdn.com/w80/dz.png", rank: 36, points: 1497.5, evolution: 0 },
+  { code: "NOR", name: "Norvège", flag: "https://flagcdn.com/w80/no.png", rank: 31, points: 1580.72, evolution: 2 },
   { code: "EGY", name: "Égypte", flag: "https://flagcdn.com/w80/eg.png", rank: 33, points: 1508.99, evolution: 1 },
 ];
 
