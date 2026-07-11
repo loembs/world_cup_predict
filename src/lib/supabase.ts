@@ -5,16 +5,13 @@
  * - Les statistiques des équipes (team_current_stats)
  * - L'historique H2H (h2h_stats)
  * - L'Edge Function de prédiction (/functions/v1/predict)
+ *
+ * Note: Utilise fetch natif au lieu d'une dépendance pour éviter les problèmes de build
  */
-
-import { createClient } from '@supabase/supabase-js'
 
 // Configuration Supabase
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://xafwxhhsoewaelnzhwqe.supabase.co'
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
-
-// Client Supabase pour les requêtes directes aux tables
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 // URL de l'Edge Function de prédiction
 export const PREDICT_FUNCTION_URL = `${supabaseUrl}/functions/v1/predict`
@@ -97,25 +94,61 @@ export interface PredictionRecord {
 }
 
 /**
- * Fonctions utilitaires pour interagir avec Supabase
+ * Fonction helper pour les requêtes Supabase via REST API
  */
+async function supabaseFetch<T>(
+  table: string,
+  options: {
+    select?: string
+    eq?: [string, string | number][]
+    order?: { column: string; ascending?: boolean }
+    limit?: number
+    single?: boolean
+  } = {}
+): Promise<T | T[] | null> {
+  const params = new URLSearchParams()
+
+  if (options.select) params.append('select', options.select)
+  if (options.eq) {
+    options.eq.forEach(([column, value]) => params.append(column, `eq.${value}`))
+  }
+  if (options.order) {
+    params.append('order', `${options.order.column}${options.order.ascending ? '.asc' : '.desc'}`)
+  }
+  if (options.limit) params.append('limit', options.limit.toString())
+
+  const url = `${supabaseUrl}/rest/v1/${table}?${params.toString()}`
+
+  try {
+    const response = await fetch(url, {
+      headers: {
+        'apikey': supabaseAnonKey,
+        'Authorization': `Bearer ${supabaseAnonKey}`,
+      },
+    })
+
+    if (!response.ok) {
+      const error = await response.text()
+      console.error(`Supabase fetch error: ${response.status} - ${error}`)
+      return null
+    }
+
+    const data = await response.json()
+    return options.single ? (data as T[])[0] || null : data
+  } catch (error) {
+    console.error('Supabase fetch error:', error)
+    return null
+  }
+}
 
 /**
  * Récupère les statistiques d'une équipe
  */
 export async function getTeamStats(teamName: string): Promise<TeamStats | null> {
-  const { data, error } = await supabase
-    .from('team_current_stats')
-    .select('*')
-    .eq('team', teamName)
-    .single()
-
-  if (error) {
-    console.error(`Error fetching stats for ${teamName}:`, error)
-    return null
-  }
-
-  return data
+  return supabaseFetch<TeamStats>('team_current_stats', {
+    eq: [['team', teamName]],
+    single: true,
+  }) as Promise<TeamStats | null>
 }
 
 /**
@@ -125,19 +158,10 @@ export async function getH2HStats(teamA: string, teamB: string): Promise<H2HStat
   // Les stats H2H sont stockées avec les noms triés alphabétiquement
   const [a, b] = [teamA, teamB].sort()
 
-  const { data, error } = await supabase
-    .from('h2h_stats')
-    .select('*')
-    .eq('team_a', a)
-    .eq('team_b', b)
-    .single()
-
-  if (error) {
-    // Pas d'erreur si pas de données H2H
-    return null
-  }
-
-  return data
+  return supabaseFetch<H2HStats>('h2h_stats', {
+    eq: [['team_a', a], ['team_b', b]],
+    single: true,
+  }) as Promise<H2HStats | null>
 }
 
 /**
@@ -167,16 +191,10 @@ export async function predictMatch(
  * Récupère l'historique des prédictions
  */
 export async function getPredictions(limit = 50): Promise<PredictionRecord[]> {
-  const { data, error } = await supabase
-    .from('predictions')
-    .select('*')
-    .order('created_at', { ascending: false })
-    .limit(limit)
+  const result = await supabaseFetch<PredictionRecord>('predictions', {
+    order: { column: 'created_at', ascending: false },
+    limit,
+  })
 
-  if (error) {
-    console.error('Error fetching predictions:', error)
-    return []
-  }
-
-  return data || []
+  return (result as PredictionRecord[]) || []
 }
