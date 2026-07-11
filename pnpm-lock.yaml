@@ -2125,8 +2125,8 @@ packages:
       crossws:
         optional: true
 
-  h3@2.0.1-rc.23:
-    resolution: {integrity: sha512-WeWSA0zoL9yWSffB0XMEf1v2zNvvRq4eevFX9xd8jZV5QSYTh6VcLTlR1cv/FusD4eRYHkHeXD9hksTmzgufsQ==}
+  h3@2.0.1-rc.24:
+    resolution: {integrity: sha512-saxpbF+/oPUCVvdkrcjiXhH5b7US1tul9qe0w9t6FMMBXYeuTB1tPxSEY8AFsA6g9sT8VmQGN7jERxdX5ew1Ow==}
     engines: {node: '>=20.11.1'}
     hasBin: true
     peerDependencies:
@@ -4860,7 +4860,7 @@ snapshots:
     optionalDependencies:
       crossws: 0.4.9(srvx@0.11.21)
 
-  h3@2.0.1-rc.23(crossws@0.4.9(srvx@0.11.21)):
+  h3@2.0.1-rc.24(crossws@0.4.9(srvx@0.11.21)):
     dependencies:
       rou3: 0.9.1
       srvx: 0.11.21
@@ -5028,7 +5028,7 @@ snapshots:
       crossws: 0.4.9(srvx@0.11.21)
       db0: 0.3.4
       env-runner: 0.1.16
-      h3: 2.0.1-rc.23(crossws@0.4.9(srvx@0.11.21))
+      h3: 2.0.1-rc.24(crossws@0.4.9(srvx@0.11.21))
       hookable: 6.1.1
       nf3: 0.3.21
       ocache: 0.1.5
