@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { TEAMS, predictMatch, type Prediction, type Team } from "@/lib/teams";
+import confetti from "canvas-confetti";
 
 function TeamSelect({
   label,
@@ -7,12 +8,14 @@ function TeamSelect({
   onChange,
   exclude,
   align = "left",
+  isWinner = false,
 }: {
   label: string;
   team: Team;
   onChange: (code: string) => void;
   exclude: string;
   align?: "left" | "right";
+  isWinner?: boolean;
 }) {
   return (
     <div className={`space-y-4 ${align === "right" ? "text-right md:text-left" : ""}`}>
@@ -20,7 +23,7 @@ function TeamSelect({
         {label}
       </label>
       <div className="relative flex items-center gap-4 bg-surface p-4 border border-border group hover:border-primary transition-colors">
-        <div className="size-12 shrink-0 grid place-items-center bg-secondary ring-1 ring-input group-hover:ring-primary/50 overflow-hidden">
+        <div className={`size-12 shrink-0 grid place-items-center bg-secondary ring-1 ring-input group-hover:ring-primary/50 overflow-hidden ${isWinner ? "winner-flag" : ""}`}>
           <img src={team.flag} alt={`Drapeau ${team.name}`} width={48} height={36} className="w-full h-auto object-cover" loading="lazy" />
         </div>
         <div className="min-w-0 flex-1">
@@ -57,6 +60,46 @@ export function PredictionModule() {
   const home = useMemo(() => TEAMS.find((t) => t.code === homeCode)!, [homeCode]);
   const away = useMemo(() => TEAMS.find((t) => t.code === awayCode)!, [awayCode]);
 
+  // Déterminer l'équipe gagnante
+  const winner = useMemo(() => {
+    if (!result) return null;
+    if (result.homeWin > result.draw && result.homeWin > result.awayWin) return 'home';
+    if (result.awayWin > result.draw && result.awayWin > result.homeWin) return 'away';
+    return null; // Match nul
+  }, [result]);
+
+  // Effet de confettis quand un résultat arrive avec un gagnant clair
+  useEffect(() => {
+    if (result && winner) {
+      // Déclencher les confettis depuis les deux côtés
+      const duration = 3000;
+      const end = Date.now() + duration;
+
+      const frame = () => {
+        confetti({
+          particleCount: 3,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0 },
+          colors: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4']
+        });
+        confetti({
+          particleCount: 3,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1 },
+          colors: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4']
+        });
+
+        if (Date.now() < end) {
+          requestAnimationFrame(frame);
+        }
+      };
+
+      frame();
+    }
+  }, [result, winner]);
+
   const runPrediction = () => {
     setComputing(true);
     setResult(null);
@@ -81,6 +124,7 @@ export function PredictionModule() {
                 setHomeCode(c);
                 setResult(null);
               }}
+              isWinner={winner === 'home'}
             />
             <div className="text-4xl font-display font-black italic text-muted-foreground/30 select-none text-center">
               VS
@@ -94,6 +138,7 @@ export function PredictionModule() {
                 setAwayCode(c);
                 setResult(null);
               }}
+              isWinner={winner === 'away'}
             />
           </div>
 

@@ -171,3 +171,44 @@
     color: var(--color-background);
   }
 }
+
+/* Animation du drapeau gagnant */
+@keyframes winner-pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 oklch(0.723 0.192 149.579 / 0%);
+  }
+  50% {
+    transform: scale(1.4);
+    box-shadow: 0 0 40px 10px oklch(0.723 0.192 149.579 / 60%);
+  }
+  100% {
+    transform: scale(1.35);
+    box-shadow: 0 0 50px 15px oklch(0.723 0.192 149.579 / 50%);
+  }
+}
+
+@keyframes winner-ring {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+.winner-flag {
+  animation: winner-pulse 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  position: relative;
+}
+
+.winner-flag::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  border: 2px solid oklch(0.723 0.192 149.579);
+  animation: winner-ring 1.5s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
